@@ -1,0 +1,60 @@
+{
+  "nodes": {
+    "gnulib-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1628068719,
+        "narHash": "sha256-aHaRshS/k18I1wGLk69DIF/ZW3zhw57XEQualBbccL8=",
+        "ref": "master",
+        "rev": "81852598aa3cd82cc8d3e594bc155cfa0190db1c",
+        "revCount": 22109,
+        "type": "git",
+        "url": "https://git.savannah.gnu.org/git/gnulib.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.savannah.gnu.org/git/gnulib.git"
+      }
+    },
+    "namecoin-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1627889111,
+        "narHash": "sha256-SF5a3tklMksU/is1hd6TXRNAPZ0/h0kDnBXK3tFLNG4=",
+        "owner": "namecoin",
+        "repo": "namecoin-core",
+        "rev": "c1625db14b15bf93a362916b268b0abf6fabf7b1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "namecoin",
+        "repo": "namecoin-core",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1628165821,
+        "narHash": "sha256-I/e2Y1TjUkaM787s3gaeaB8X2OvinP/ueZpYnJjN6G4=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "ff1ea3a36c1dfafdf0490e0d144c5a0ed0891bb9",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-21.05",
+        "type": "indirect"
+      }
+    },
+    "root": {
+      "inputs": {
+        "gnulib-src": "gnulib-src",
+        "namecoin-src": "namecoin-src",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

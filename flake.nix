@@ -6,8 +6,8 @@
 
   # Upstream source tree(s).
   inputs.namecoin-src = { url = "github:namecoin/namecoin-core"; flake = false; };
-  inputs.gnulib-src = { url = git+https://git.savannah.gnu.org/git/gnulib.git; flake = false;};
-  
+  inputs.gnulib-src = { url = git+https://git.savannah.gnu.org/git/gnulib.git; flake = false; };
+
   outputs = { self, nixpkgs, gnulib-src, namecoin-src }:
     let
 
@@ -35,22 +35,19 @@
 
           src = namecoin-src;
 
-          buildInputs = [ autoconf python3 automake libtool gettext gnulib perl gperf texinfo help2man ];
+          buildInputs = [ autoconf automake python3 libtool boost libevent pkg-config hexdump ];
 
-          preConfigure = ''
-            mkdir -p .git # force BUILD_FROM_GIT
-            ../namecoin-core/autogen.sh
-          '';
+          configurePhase = ''
+              ./autogen.sh
+              ./configure --prefix=$out --without-bdb'';
 
-          configurePhase = '' ../namecoin-core/configure '';
-
-          buildPhase = '' make '';
+          buildPhase = '' make -j 4'';
           installPhase = '' make install '';
-          
+
           meta = {
             homepage = "https://namecoin.org";
             downloadPage = "https://namecoin.org/download";
-            description = "a decentralized open source information registration and transfer system based on the Bitcoin cryptocurrency."; 
+            description = "a decentralized open source information registration and transfer system based on the Bitcoin cryptocurrency.";
           };
         };
 
@@ -102,9 +99,10 @@
 
         # A VM test of the NixOS module.
         vmTest =
-          with import (nixpkgs + "/nixos/lib/testing-python.nix") {
-            inherit system;
-          };
+          with import (nixpkgs + "/nixos/lib/testing-python.nix")
+            {
+              inherit system;
+            };
 
           makeTest {
             nodes = {
