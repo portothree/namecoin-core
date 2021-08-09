@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "gnulib-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1628068719,
-        "narHash": "sha256-aHaRshS/k18I1wGLk69DIF/ZW3zhw57XEQualBbccL8=",
-        "ref": "master",
-        "rev": "81852598aa3cd82cc8d3e594bc155cfa0190db1c",
-        "revCount": 22109,
-        "type": "git",
-        "url": "https://git.savannah.gnu.org/git/gnulib.git"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://git.savannah.gnu.org/git/gnulib.git"
-      }
-    },
     "namecoin-src": {
       "flake": false,
       "locked": {
@@ -49,7 +33,6 @@
     },
     "root": {
       "inputs": {
-        "gnulib-src": "gnulib-src",
         "namecoin-src": "namecoin-src",
         "nixpkgs": "nixpkgs"
       }

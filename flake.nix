@@ -1,14 +1,13 @@
 {
-  description = "(insert short project description here)";
+  description = "a decentralized open source information registration and transfer system based on the Bitcoin cryptocurrency.";
 
   # Nixpkgs / NixOS version to use.
   inputs.nixpkgs.url = "nixpkgs/nixos-21.05";
 
   # Upstream source tree(s).
   inputs.namecoin-src = { url = "github:namecoin/namecoin-core"; flake = false; };
-  inputs.gnulib-src = { url = git+https://git.savannah.gnu.org/git/gnulib.git; flake = false; };
 
-  outputs = { self, nixpkgs, gnulib-src, namecoin-src }:
+  outputs = { self, nixpkgs, namecoin-src }:
     let
 
       # Generate a user-friendly version numer.
@@ -16,7 +15,7 @@
 
       # System types to support.
       supportedSystems = [ "x86_64-linux" ];
-
+ 
       # Helper function to generate an attrset '{ x86_64-linux = f "x86_64-linux"; ... }'.
       forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f system);
 
@@ -35,11 +34,24 @@
 
           src = namecoin-src;
 
-          buildInputs = [ autoconf automake python3 libtool boost libevent pkg-config hexdump ];
+          withWallet = true;
+          withGui = false;
+          withUPNP = false;
+          withNatPNP = false;
+
+          buildInputs = [ autoconf automake python3 libtool boost libevent pkg-config hexdump ] 
+            ++ lib.optionals (withWallet) [ db48 sqlite ]
+            ++ lib.optionals (withUPNP) [ libupnp ];
+
+          configureFlags = [] ++ lib.optionals (!withGui) [ "--without-gui" ] 
+            ++ lib.optionals (!withWallet) [ "--disable-wallet" ]
+            ++ lib.optionals (withUPNP) [ "--with-miniupnpc" "--enable-upnp-default" ]
+            ++ lib.optionals (!withNatPNP) [ "--with-natpmp" "--enable-natpmp-default" ] ;
 
           configurePhase = ''
               ./autogen.sh
-              ./configure --prefix=$out --without-bdb'';
+              ./configure --prefix=$out --without-bdb
+          '';
 
           buildPhase = '' make -j 4'';
           installPhase = '' make install '';
