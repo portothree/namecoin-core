@@ -40,9 +40,9 @@
           withNatpmp = false;
           withHardening = true;
 
-          nativeBuildInputs = [ libsForQt5.qt5.wrapQtAppsHook] ;
+          nativeBuildInputs = [ libsForQt5.qt5.wrapQtAppsHook boost] ;
 
-          buildInputs = [ autoconf automake python3 libtool boost libevent pkg-config zeromq hexdump ]
+          buildInputs = [ autoconf automake python3 libtool libevent pkg-config zeromq hexdump ]
             ++ lib.optionals (withWallet) [ db48 sqlite ]
             ++ lib.optionals (withUpnp) [ libupnp ]
             ++ lib.optionals (withNatpmp) [ libnatpmp];
@@ -55,10 +55,10 @@
 
           configurePhase = ''
               ./autogen.sh
-              ./configure --prefix=$out
+              ./configure --with-boost-libdir=${boost}/lib --prefix=$out
           '';
 
-          buildPhase = '' make -j 4'';
+          buildPhase = '' make '';
           installPhase = '' make install '';
 
           meta = {
