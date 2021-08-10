@@ -36,21 +36,26 @@
 
           withWallet = true;
           withGui = false;
-          withUPNP = false;
-          withNatPNP = false;
+          withUpnp = false;
+          withNatpmp = false;
+          withHardening = true;
 
-          buildInputs = [ autoconf automake python3 libtool boost libevent pkg-config hexdump ] 
+          nativeBuildInputs = [ libsForQt5.qt5.wrapQtAppsHook] ;
+
+          buildInputs = [ autoconf automake python3 libtool boost libevent pkg-config zeromq hexdump ]
             ++ lib.optionals (withWallet) [ db48 sqlite ]
-            ++ lib.optionals (withUPNP) [ libupnp ];
+            ++ lib.optionals (withUpnp) [ libupnp ]
+            ++ lib.optionals (withNatpmp) [ libnatpmp];
 
-          configureFlags = [] ++ lib.optionals (!withGui) [ "--without-gui" ] 
+          configureFlags = lib.optionals (!withGui) [ "--without-gui" ]
             ++ lib.optionals (!withWallet) [ "--disable-wallet" ]
-            ++ lib.optionals (withUPNP) [ "--with-miniupnpc" "--enable-upnp-default" ]
-            ++ lib.optionals (!withNatPNP) [ "--with-natpmp" "--enable-natpmp-default" ] ;
+            ++ lib.optionals (withUpnp) [ "--with-miniupnpc" "--enable-upnp-default" ]
+            ++ lib.optionals (withNatpmp) [ "--with-natpmp" "--enable-natpmp-default" ]
+            ++ lib.optionals (!withHardening) [ "--disable-hardening" ] ;
 
           configurePhase = ''
               ./autogen.sh
-              ./configure --prefix=$out --without-bdb
+              ./configure --prefix=$out
           '';
 
           buildPhase = '' make -j 4'';
@@ -103,7 +108,6 @@
 
             buildPhase = ''
               echo 'running some integration tests'
-              [[ $(namecoin-core) = 'Hello, world!' ]]
             '';
 
             installPhase = "mkdir -p $out";
@@ -125,9 +129,6 @@
 
             testScript =
               ''
-                start_all()
-                client.wait_for_unit("multi-user.target")
-                client.succeed("hello")
               '';
           };
       });
