@@ -24,8 +24,13 @@ let
   additionalFilters = [ "*.nix" "nix/" "build/" ];
   filterSource = nix-gitignore.gitignoreSource additionalFilters;
   cleanedSource = filterSource ../.;
+  desktop = builtins.fetchurl {
+    url = "https://raw.githubusercontent.com/bitcoin-core/packaging/0.21/debian/bitcoin-qt.desktop";
+    sha256 = "0cpna0nxcd1dw3nnzli36nf9zj28d2g9jf5y0zl9j18lvanvniha";
+  };
   qtbase = libsForQt5.qt5.qtbase;
   qttools = libsForQt5.qt5.qttools;
+  qmake = libsForQt5.qt5.qmake;
 in stdenv.mkDerivation rec {
   pname = "namecoin-core";
   # TODO: find a better way to determine version, but it doesn't seem to be version controlled
@@ -33,42 +38,57 @@ in stdenv.mkDerivation rec {
 
   src = cleanedSource;
 
-  withWallet = true;
+  withWallet = false;
   withGui = true;
   withUpnp = false;
   withNatpmp = false;
   withHardening = true;
 
-  nativeBuildInputs = [ pkg-config autoreconfHook boost ] 
-    ++ optionals (withGui) [ wrapQtAppsHook ];
+  nativeBuildInputs = [ pkg-config autoreconfHook boost ]
+    ++ optionals (withGui) [ wrapQtAppsHook qmake ];
 
-  buildInputs = [ python3 libtool libevent zeromq hexdump libsForQt5.qt5.qtbase]
+  buildInputs = [ python3 libtool libevent zeromq hexdump qtbase qttools ]
     ++ optionals (withWallet) [ db48 sqlite ]
     ++ optionals (withUpnp) [ libupnp ]
     ++ optionals (withNatpmp) [ libnatpmp];
 
-    configureFlags = optionals (!withGui) [ "--without-gui" ]
-      ++ optionals (!withWallet) [ "--disable-wallet" ]
+    #preConfigure = "LRELEASE=${lib.getDev qttools}/bin/lrelease";
+    configureFlags = [ ]
+      ++ optionals (!withGui) [ " --without-gui " ]
+      ++ optionals (!withWallet) [ "--disable-wallet" "--without-bdb" ]
       ++ optionals (withUpnp) [ "--with-miniupnpc" "--enable-upnp-default" ]
       ++ optionals (withNatpmp) [ "--with-natpmp" "--enable-natpmp-default" ]
       ++ optionals (!withHardening) [ "--disable-hardening" ] 
       ++ optionals withGui [
         "--with-gui=qt5"
         "--with-qt-bindir=${qtbase.dev}/bin:${qttools.dev}/bin"
+        "QT_PLUGIN_PATH=${qtbase}/${qtbase.qtPluginPrefix}"
       ];
 
     configurePhase = ''
         ./autogen.sh
-        ./configure --with-boost-libdir=${boost}/lib --prefix=$out
+        ./configure --enable-cxx --without-bdb --disable-shared --prefix=${db48}/bin --with-boost=${boost} --with-boost-libdir=${boost}/lib --prefix=$out
     '';
 
-    buildPhase = '' make '';
+    LRELEASE = "${qttools.dev}/bin/lrelease";
+    LUPDATE = "${qttools.dev}/bin/lupdate";
+    LCONVERT = "${qttools.dev}/bin/lconvert";
+    
+    postConfigure = "make qmake_all";
+
+    buildPhase = '' 
+      make -j 4
+    '';
 
     installPhase = '' make install '';
 
-    postInstall = ''
-        install -Dm644 bin/namecoin-qt $out/share/applications/namecoin-qt.desktop
+    postInstall = optionalString withGui ''
+        install -Dm644 ${desktop} $out/share/applications/namecoin-qt.desktop
     '';
+
+    dontWrapQtApps = true;
+    
+    qtWrapperArgs = [ ''--prefix "$out/share/applications/namecoin-qt.desktop" : bin/namecoin-qt '' ];
 
     checkFlags =
         [ "LC_ALL=C.UTF-8" ]
