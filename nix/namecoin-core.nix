@@ -15,8 +15,7 @@
   sqlite,
   libupnp,
   libnatpmp,
-  libsForQt5,
-  wrapQtAppsHook ? null
+  libsForQt5
   }:
 
 with lib;
@@ -28,9 +27,8 @@ let
     url = "https://raw.githubusercontent.com/bitcoin-core/packaging/0.21/debian/bitcoin-qt.desktop";
     sha256 = "0cpna0nxcd1dw3nnzli36nf9zj28d2g9jf5y0zl9j18lvanvniha";
   };
-  qtbase = libsForQt5.qt5.qtbase;
-  qttools = libsForQt5.qt5.qttools;
-  qmake = libsForQt5.qt5.qmake;
+
+  inherit (libsForQt5.qt5) qtbase qttools qmake wrapQtAppsHook;
 in stdenv.mkDerivation rec {
   pname = "namecoin-core";
   # TODO: find a better way to determine version, but it doesn't seem to be version controlled
@@ -52,7 +50,6 @@ in stdenv.mkDerivation rec {
     ++ optionals (withUpnp) [ libupnp ]
     ++ optionals (withNatpmp) [ libnatpmp];
 
-    #preConfigure = "LRELEASE=${lib.getDev qttools}/bin/lrelease";
     configureFlags = [ ]
       ++ optionals (!withGui) [ " --without-gui " ]
       ++ optionals (!withWallet) [ "--disable-wallet" "--without-bdb" ]
@@ -62,7 +59,6 @@ in stdenv.mkDerivation rec {
       ++ optionals withGui [
         "--with-gui=qt5"
         "--with-qt-bindir=${qtbase.dev}/bin:${qttools.dev}/bin"
-        "QT_PLUGIN_PATH=${qtbase}/${qtbase.qtPluginPrefix}"
       ];
 
     configurePhase = ''
@@ -70,10 +66,11 @@ in stdenv.mkDerivation rec {
         ./configure --enable-cxx --without-bdb --disable-shared --prefix=${db48}/bin --with-boost=${boost} --with-boost-libdir=${boost}/lib --prefix=$out
     '';
 
+    QT_PLUGIN_PATH = "${qtbase}/${qtbase.qtPluginPrefix}";
     LRELEASE = "${qttools.dev}/bin/lrelease";
     LUPDATE = "${qttools.dev}/bin/lupdate";
     LCONVERT = "${qttools.dev}/bin/lconvert";
-    
+
     postConfigure = "make qmake_all";
 
     buildPhase = '' 
@@ -85,10 +82,8 @@ in stdenv.mkDerivation rec {
     postInstall = optionalString withGui ''
         install -Dm644 ${desktop} $out/share/applications/namecoin-qt.desktop
     '';
-
-    dontWrapQtApps = true;
     
-    qtWrapperArgs = [ ''--prefix "$out/share/applications/namecoin-qt.desktop" : bin/namecoin-qt '' ];
+    qtWrapperArgs = [ ''--prefix PATH : bin/namecoin-qt '' ];
 
     checkFlags =
         [ "LC_ALL=C.UTF-8" ]
