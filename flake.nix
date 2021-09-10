@@ -25,6 +25,24 @@
       apps.namecoin-core = utils.lib.mkApp { drv = packages.namecoin-core; };
       hydraJobs = { inherit (legacyPackages) namecoin-core; };
       checks = { inherit (legacyPackages) namecoin-core; };
+      nixosModules.namecoin-core =
+        { ... }:
+          {
+            nixpkgs.overlays = [ self.overlay ];
+
+            systemd.packages = [ defaultPackage ];
+
+            systemd.services.namecoin-core = {
+              path = [ defaultPackage ];
+              description = "Namecoin Core daemon.";
+
+              serviceConfig = {
+                Type = "simple";
+                ExecStart = "${defaultPackage}/bin/namecoin-core --without-gui";
+                wantedBy = [ "default.target" ];
+              };
+            };
+          };
   }) // {
     overlay = localOverlay;
     overlays = {};
