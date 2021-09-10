@@ -15,7 +15,12 @@
   sqlite,
   libupnp,
   libnatpmp,
-  libsForQt5
+  libsForQt5,
+  withWallet ? false,
+  withGui ? true,
+  withUpnp ? false,
+  withNatpmp ? false,
+  withHardening ? true
   }:
 
 with lib;
@@ -36,13 +41,7 @@ in stdenv.mkDerivation rec {
 
   src = cleanedSource;
 
-  withWallet = false;
-  withGui = true;
-  withUpnp = false;
-  withNatpmp = false;
-  withHardening = true;
-
-  nativeBuildInputs = [ pkg-config autoreconfHook boost ]
+  nativeBuildInputs = [ pkg-config autoreconfHook boost wrapQtAppsHook ]
     ++ optionals (withGui) [ wrapQtAppsHook qmake ];
 
   buildInputs = [ python3 libtool libevent zeromq hexdump qtbase qttools ]
