@@ -8,7 +8,11 @@
 
   outputs = { self, nixpkgs, utils }:
     let
-      localOverlay = import ./nix/overlay.nix;
+      localOverlay = final: prev: {
+        namecoin-core = prev.callPackage ./nix/namecoin-core.nix {};
+
+        devShell = final.namecoin-core;
+      };
 
       pkgsForSystem = system: import nixpkgs {
         overlays = [
