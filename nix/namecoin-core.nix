@@ -65,7 +65,7 @@ in stdenv.mkDerivation rec {
         ./configure --enable-cxx --without-bdb --disable-shared --prefix=${db48}/bin --with-boost=${boost} --with-boost-libdir=${boost}/lib --prefix=$out
     '';
 
-    QT_PLUGIN_PATH = "${qtbase}/${qtbase.qtPluginPrefix}";
+    QT_PLUGIN_PATH = if withGui then "${qtbase}/${qtbase.qtPluginPrefix}" else null;
     LRELEASE = "${qttools.dev}/bin/lrelease";
     LUPDATE = "${qttools.dev}/bin/lupdate";
     LCONVERT = "${qttools.dev}/bin/lconvert";
@@ -82,7 +82,7 @@ in stdenv.mkDerivation rec {
         install -Dm644 ${desktop} $out/share/applications/namecoin-qt.desktop
     '';
     
-    qtWrapperArgs = [ ''--prefix PATH : bin/namecoin-qt '' ];
+    qtWrapperArgs = [ ''--prefix PATH : ${placeholder "out"}/bin/namecoin-qt '' ];
 
     checkFlags =
         [ "LC_ALL=C.UTF-8" ]
