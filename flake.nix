@@ -30,23 +30,28 @@
       hydraJobs = { inherit (legacyPackages) namecoin-core; };
       checks = { inherit (legacyPackages) namecoin-core; };
       nixosModules.namecoin-core =
-        { ... }:
-          {
-            nixpkgs.overlays = [ self.overlay ];
+        { lib, config, ... }:
+            with lib;
+            let
+              cfg = config.services.namecoin-core;
+            in {
+              config = mkIf cfg.enable {
+                    nixpkgs.overlays = [ self.overlay ];
 
-            systemd.packages = [ defaultPackage ];
+                    systemd.packages = [ defaultPackage ];
 
-            systemd.services.namecoin-core = {
-              path = [ defaultPackage ];
-              description = "Namecoin Core daemon.";
+                    systemd.services.namecoin-core = {
+                      path = [ defaultPackage ];
+                      description = "Namecoin Core daemon.";
 
-              serviceConfig = {
-                Type = "simple";
-                ExecStart = "${defaultPackage}/bin/namecoin-core --without-gui";
-                wantedBy = [ "default.target" ];
+                      serviceConfig = {
+                        Type = "simple";
+                        ExecStart = "${defaultPackage}/bin/namecoind";
+                        wantedBy = [ "default.target" ];
+                      };
+                    };
               };
             };
-          };
   }) // {
     overlay = localOverlay;
     overlays = {};
