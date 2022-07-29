@@ -24,8 +24,8 @@
       legacyPackages = pkgsForSystem system;
       packages = utils.lib.flattenTree {
         inherit (legacyPackages) devShell namecoin-core;
+        default = legacyPackages.namecoin-core;
       };
-      defaultPackage = packages.namecoin-core;
       apps.namecoin-core = utils.lib.mkApp { drv = packages.namecoin-core; };
       hydraJobs = { inherit (legacyPackages) namecoin-core; };
       checks = { inherit (legacyPackages) namecoin-core; };
@@ -53,7 +53,6 @@
               };
             };
   }) // {
-    overlay = localOverlay;
-    overlays = {};
+    overlays.default = localOverlay;
   };
 }
