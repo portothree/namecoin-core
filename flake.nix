@@ -9,18 +9,18 @@
   outputs = { self, nixpkgs, utils }:
     let
       localOverlay = final: prev: {
-        namecoin-core = prev.callPackage ./nix/namecoin-core.nix {};
+        namecoin-core = prev.callPackage ./nix/namecoin-core.nix { };
 
         devShell = final.namecoin-core;
       };
 
-      pkgsForSystem = system: import nixpkgs {
-        overlays = [
-          localOverlay
-        ];
-        inherit system;
-      };
-    in utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" ] (system: rec {
+      pkgsForSystem = system:
+        import nixpkgs {
+          overlays = [ localOverlay ];
+          inherit system;
+        };
+    in utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" ]
+    (system: rec {
       legacyPackages = pkgsForSystem system;
       packages = utils.lib.flattenTree {
         inherit (legacyPackages) devShell namecoin-core;
@@ -29,30 +29,28 @@
       apps.namecoin-core = utils.lib.mkApp { drv = packages.namecoin-core; };
       hydraJobs = { inherit (legacyPackages) namecoin-core; };
       checks = { inherit (legacyPackages) namecoin-core; };
-      nixosModules.namecoin-core =
-        { lib, config, ... }:
-            with lib;
-            let
-              cfg = config.services.namecoin-core;
-            in {
-              config = mkIf cfg.enable {
-                    nixpkgs.overlays = [ self.overlay ];
+    }) // {
+      nixosModules.namecoin-core = { lib, config, ... }:
+        with lib;
+        let cfg = config.services.namecoin-core;
+        in {
+          config = mkIf cfg.enable {
+            nixpkgs.overlays = [ self.overlay ];
 
-                    systemd.packages = [ defaultPackage ];
+            systemd.packages = [ defaultPackage ];
 
-                    systemd.services.namecoin-core = {
-                      path = [ defaultPackage ];
-                      description = "Namecoin Core daemon.";
+            systemd.services.namecoin-core = {
+              path = [ defaultPackage ];
+              description = "Namecoin Core daemon.";
 
-                      serviceConfig = {
-                        Type = "simple";
-                        ExecStart = "${defaultPackage}/bin/namecoind";
-                        wantedBy = [ "default.target" ];
-                      };
-                    };
+              serviceConfig = {
+                Type = "simple";
+                ExecStart = "${defaultPackage}/bin/namecoind";
+                wantedBy = [ "default.target" ];
               };
             };
-  }) // {
-    overlays.default = localOverlay;
-  };
+          };
+        };
+      overlays.default = localOverlay;
+    };
 }
