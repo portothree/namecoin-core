@@ -43,7 +43,7 @@
             };
           };
           config = mkIf cfg.enable {
-            nixpkgs.overlays = [ self.overlay ];
+            nixpkgs.overlays = [ localOverlay ];
 
             systemd.packages = [ defaultPackage ];
 
