@@ -37,7 +37,7 @@
           options = {
             services.namecoin-core = {
               enable = mkOption {
-                type = bool;
+                type = types.bool;
                 default = false;
               };
             };
