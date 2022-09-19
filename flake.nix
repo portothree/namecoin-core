@@ -34,7 +34,7 @@
         with lib;
         let
           cfg = config.services.namecoin-core;
-          defaultPackage = packages.${builtins.currentSystem}.default;
+          defaultPackage = self.packages.${builtins.currentSystem}.default;
         in {
           options = {
             services.namecoin-core = {
