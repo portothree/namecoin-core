@@ -32,7 +32,9 @@
     }) // {
       nixosModules.namecoin-core = { lib, config, ... }:
         with lib;
-        let cfg = config.services.namecoin-core;
+        let
+          cfg = config.services.namecoin-core;
+          defaultPackage = packages.${builtins.currentSystem}.default;
         in {
           options = {
             services.namecoin-core = {
