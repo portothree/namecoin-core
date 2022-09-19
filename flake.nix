@@ -34,6 +34,14 @@
         with lib;
         let cfg = config.services.namecoin-core;
         in {
+          options = {
+            services.namecoin-core = {
+              enable = mkOption {
+                type = bool;
+                default = false;
+              };
+            };
+          };
           config = mkIf cfg.enable {
             nixpkgs.overlays = [ self.overlay ];
 
