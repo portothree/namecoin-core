@@ -30,11 +30,11 @@
       hydraJobs = { inherit (legacyPackages) namecoin-core; };
       checks = { inherit (legacyPackages) namecoin-core; };
     }) // {
-      nixosModules.namecoin-core = { lib, config, ... }:
+      nixosModules.namecoin-core = { pkgs, lib, config, ... }:
         with lib;
         let
           cfg = config.services.namecoin-core;
-          defaultPackage = self.packages.${builtins.currentSystem}.default;
+          defaultPackage = pkgs.namecoin-core;
         in {
           options = {
             services.namecoin-core = {
