@@ -32,9 +32,7 @@
     }) // {
       nixosModules.namecoin-core = { pkgs, lib, config, ... }:
         with lib;
-        let
-          cfg = config.services.namecoin-core;
-          defaultPackage = pkgs.namecoin-core;
+        let cfg = config.services.namecoin-core;
         in {
           options = {
             services.namecoin-core = {
@@ -47,15 +45,15 @@
           config = mkIf cfg.enable {
             nixpkgs.overlays = [ localOverlay ];
 
-            systemd.packages = [ defaultPackage ];
+            systemd.packages = [ pkgs.namecoin-core ];
 
             systemd.services.namecoin-core = {
-              path = [ defaultPackage ];
+              path = [ pkgs.namecoin-core ];
               description = "Namecoin Core daemon.";
 
               serviceConfig = {
                 Type = "simple";
-                ExecStart = "${defaultPackage}/bin/namecoind";
+                ExecStart = "${pkgs.namecoin-core}/bin/namecoind";
                 wantedBy = [ "default.target" ];
               };
             };
